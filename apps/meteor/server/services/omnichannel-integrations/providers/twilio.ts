@@ -98,7 +98,14 @@ export class Twilio implements ISMSProvider {
 
 			returnData.media.push(media);
 		}
-
+		// ---- APPEND MEDIA LINKS TO BODY ----
+		if (returnData.media.length > 0) {
+		const links = returnData.media
+			.map((media) => media.url)
+			.filter((url) => !!url) // skip empty
+			.join('\n');
+		returnData.body = [returnData.body, links].filter(Boolean).join('\n');
+		}
 		return returnData;
 	}
 

@@ -33,7 +33,7 @@ const getUploadFile = async (details: Omit<IUpload, '_id'>, fileUrl: string) => 
 		throw new Meteor.Error('error-invalid-url', 'Invalid URL');
 	}
 
-	const response = await fetch(fileUrl, { redirect: 'error' });
+	const response = await fetch(fileUrl, { redirect: 'follow' });
 
 	const content = Buffer.from(await response.arrayBuffer());
 
