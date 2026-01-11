@@ -392,7 +392,7 @@ API.v1.addRoute(
 	{ authRequired: true, validateParams: isGroupsFilesProps },
 	{
 		async get() {
-			const { typeGroup, name, roomId, roomName } = this.queryParams;
+			const { typeGroup, name, roomId, roomName, onlyConfirmed } = this.queryParams;
 
 			const findResult = await findPrivateGroupByIdOrName({
 				params: roomId ? { roomId } : { roomName },
@@ -408,6 +408,7 @@ API.v1.addRoute(
 				rid: findResult.rid,
 				...(name ? { name: { $regex: name || '', $options: 'i' } } : {}),
 				...(typeGroup ? { typeGroup } : {}),
+				...(onlyConfirmed && { expiresAt: { $exists: false } }),
 			};
 
 			const { cursor, totalCount } = await Uploads.findPaginatedWithoutThumbs(filter, {
@@ -792,6 +793,7 @@ API.v1.addRoute(
 				...parseIds(mentionIds, 'mentions._id'),
 				...parseIds(starredIds, 'starred._id'),
 				...(pinned && pinned.toLowerCase() === 'true' ? { pinned: true } : {}),
+				_hidden: { $ne: true },
 			};
 
 			const { cursor, totalCount } = Messages.findPaginated(ourQuery, {
@@ -1215,11 +1217,11 @@ API.v1.addRoute(
 				userId: this.userId,
 			});
 
-			const moderators = (
-				await Subscriptions.findByRoomIdAndRoles(findResult.rid, ['moderator'], {
-					projection: { u: 1 },
-				}).toArray()
-			).map((sub: any) => sub.u);
+			const moderators = await Subscriptions.findByRoomIdAndRoles(findResult.rid, ['moderator'], {
+				projection: { u: 1, _id: 0 },
+			})
+				.map((sub) => sub.u)
+				.toArray();
 
 			return API.v1.success({
 				moderators,

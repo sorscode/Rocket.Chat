@@ -27,6 +27,7 @@ import type { ReactElement } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 
 import { goToRoomById } from '../../lib/utils/goToRoomById';
+import { useEncryptedRoomDescription } from '../../navbar/NavBarPagesGroup/actions/useEncryptedRoomDescription';
 import RoomAutoComplete from '../RoomAutoComplete';
 import UserAutoCompleteMultiple from '../UserAutoCompleteMultiple';
 import DefaultParentRoomField from './DefaultParentRoomField';
@@ -90,6 +91,8 @@ const CreateDiscussion = ({ onClose, defaultParentRoom, parentMessageId, nameSug
 			...(parentMessageId && { pmid: parentMessageId }),
 		});
 	};
+
+	const getEncryptedHint = useEncryptedRoomDescription('discussion');
 
 	const parentRoomId = useId();
 	const encryptedId = useId();
@@ -242,11 +245,7 @@ const CreateDiscussion = ({ onClose, defaultParentRoom, parentMessageId, nameSug
 								render={({ field: { value, ...field } }) => <ToggleSwitch id={encryptedId} {...field} checked={value} />}
 							/>
 						</FieldRow>
-						{encrypted ? (
-							<FieldHint id={`${encryptedId}-hint`}>{t('Encrypted_messages', { roomType: 'discussion' })}</FieldHint>
-						) : (
-							<FieldHint id={`${encryptedId}-hint`}>{t('Encrypted_messages_false')}</FieldHint>
-						)}
+						<FieldHint id={`${encryptedId}-hint`}>{getEncryptedHint({ isPrivate: true, encrypted })}</FieldHint>
 					</Field>
 				</FieldGroup>
 			</ModalContent>
